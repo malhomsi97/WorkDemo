@@ -1,0 +1,16 @@
+{
+  "name": "cypress-pom-project",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "cypress:open": "cypress open",
+    "cypress:run": "cypress run",
+    "cypress:run:xray": "cypress run --reporter junit --reporter-options \"mochaFile=reports/junit/results-[hash].xml,toConsole=true\""
+  },
+  "allowScripts": {
+    "cypress@14.5.4": true
+  },
+  "devDependencies": {
+    "cypress": "^14.5.4"
+  }
+}
