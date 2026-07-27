@@ -1,78 +1,33 @@
 name: Cypress Tests
 
-on:
-  push:
-  pull_request:
+on: [push]
 
 jobs:
   cypress-run:
     runs-on: ubuntu-latest
+    # Runs tests in parallel with matrix strategy https://on.cypress.io/parallelization
+    # https://docs.github.com/en/actions/how-tos/write-workflows/choose-your-workflow-syntax#using-a-matrix-build
+    # Also see warning here https://github.com/cypress-io/github-action#parallel
+    strategy:
+      fail-fast: false # https://github.com/cypress-io/github-action/issues/48
+      matrix:
+        containers: [1, 2] # Uses 2 parallel instances
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v6
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - name: Cypress run
+        uses: cypress-io/github-action@v7
         with:
-          node-version: 20
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Create reports folder
-        run: mkdir -p reports/junit
-
-      - name: Run Cypress tests with JUnit output
-        run: npm run cypress:run:xray
-        continue-on-error: true
-
-      - name: Upload JUnit report artifact
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: cypress-junit-reports
-          path: reports/junit/
-
-      - name: Upload results to Xray
-        if: always()
+          # Starts web server for E2E tests - replace with your own server invocation
+          # https://docs.cypress.io/app/continuous-integration/overview#Boot-your-server
+          start: npm start
+          wait-on: 'http://localhost:3000' # Waits for above
+          # Records to Cypress Cloud
+          # https://docs.cypress.io/cloud/get-started/setup
+          record: true
+          parallel: true # Runs test in parallel using settings above
         env:
-          XRAY_CLIENT_ID: ${{ secrets.XRAY_CLIENT_ID }}
-          XRAY_CLIENT_SECRET: ${{ secrets.XRAY_CLIENT_SECRET }}
-          XRAY_PROJECT_KEY: ${{ secrets.XRAY_PROJECT_KEY }}
-        run: |
-          python - <<'PY'
-          import glob, os, sys, json, urllib.request
-          files = sorted(glob.glob('reports/junit/*.xml'))
-          if not files:
-              print('No JUnit XML report found')
-              sys.exit(0)
-          report_path = files[-1]
-          print(f'Using report: {report_path}')
-          if not all([os.getenv('XRAY_CLIENT_ID'), os.getenv('XRAY_CLIENT_SECRET'), os.getenv('XRAY_PROJECT_KEY')]):
-              print('Xray secrets are not configured. Skipping upload.')
-              sys.exit(0)
-          token_url = 'https://xray.cloud.getxray.app/api/v2/authenticate'
-          data = json.dumps({'client_id': os.getenv('XRAY_CLIENT_ID'), 'client_secret': os.getenv('XRAY_CLIENT_SECRET')}).encode()
-          req = urllib.request.Request(token_url, data=data, headers={'Content-Type': 'application/json'})
-          with urllib.request.urlopen(req) as response:
-              token = response.read().decode().strip()
-          upload_url = 'https://xray.cloud.getxray.app/api/v2/import/execution/junit?projectKey=' + os.getenv('XRAY_PROJECT_KEY')
-          boundary = '----XrayBoundary'
-          body = []
-          with open(report_path, 'rb') as f:
-              content = f.read()
-          body.append(f'--{boundary}\r\n'.encode())
-          body.append(b'Content-Disposition: form-data; name="file"; filename="' + os.path.basename(report_path).encode() + b'"\r\n')
-          body.append(b'Content-Type: application/xml\r\n\r\n')
-          body.append(content + b'\r\n')
-          body.append(f'--{boundary}--\r\n'.encode())
-          req = urllib.request.Request(upload_url, data=b''.join(body), headers={'Authorization': f'Bearer {token}', 'Content-Type': f'multipart/form-data; boundary={boundary}'})
-          try:
-              with urllib.request.urlopen(req) as response:
-                  print(response.read().decode())
-          except Exception as e:
-              print(f'Xray upload failed: {e}')
-              sys.exit(0)
-          PY
+          CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
