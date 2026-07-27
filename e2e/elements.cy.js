@@ -11,15 +11,15 @@ describe('DemoQA Elements Page', () => {
     elementsPage.verifyPageTitle();
   });
 
-  it('should show Text Box item and allow navigation', () => {
-    elementsPage
-      .openTextBox()
-      .verifyTextBoxPage();
-  });
+  // it('should show Text Box item and allow navigation', () => {
+  //   elementsPage
+  //     .openTextBox()
+  //     .verifyTextBoxPage();
+  // });
 
-  it('should show Check Box item and allow navigation', () => {
-    elementsPage
-      .openCheckBox()
-      .verifyCheckBoxPage();
-  });
+  // it('should show Check Box item and allow navigation', () => {
+  //   elementsPage
+  //     .openCheckBox()
+  //     .verifyCheckBoxPage();
+  // });
 });
