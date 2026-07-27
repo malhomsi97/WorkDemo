@@ -1,7 +1,11 @@
 class ElementsPage {
-  openURL() {
-    cy.visit('/');
+  visit() {
+    cy.visit('/elements');
     return this;
+  }
+
+  openURL() {
+    return this.visit();
   }
 
   verifyPageTitle() {
@@ -10,7 +14,7 @@ class ElementsPage {
   }
 
   openTextBox() {
-    cy.contains('Text Box').scrollIntoView().click();
+    cy.contains('Text Box').scrollIntoView().click({ force: true });
     return this;
   }
 
@@ -21,7 +25,7 @@ class ElementsPage {
   }
 
   openCheckBox() {
-    cy.contains('Check Box').scrollIntoView().click();
+    cy.contains('Check Box').scrollIntoView().click({ force: true });
     return this;
   }
 

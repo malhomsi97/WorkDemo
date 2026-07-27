@@ -2,7 +2,7 @@ const { defineConfig } = require('cypress');
 
 module.exports = defineConfig({
   e2e: {
-    projectId: "x6n7b5",
+    projectId: "xd7msb",
     baseUrl: 'https://demoqa.com',
     specPattern: 'e2e/**/*.cy.{js,jsx,ts,tsx}',
     supportFile: 'support/e2e.js',
